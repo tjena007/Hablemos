@@ -1,0 +1,346 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B03 /* HablemosCore in Frameworks */ = {isa = PBXBuildFile; productRef = D02 /* HablemosCore */; };
+		B06 /* LiteRTLM in Frameworks */ = {isa = PBXBuildFile; productRef = D11 /* LiteRTLM */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B05 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A20 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10;
+			remoteInfo = Hablemos;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A01 /* Hablemos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hablemos.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A02 /* HablemosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HablemosTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A05 /* HablemosCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = HablemosCore; sourceTree = "<group>"; };
+		A55 /* LiteRTLMKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LiteRTLMKit; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A03 /* Hablemos */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Hablemos;
+			sourceTree = "<group>";
+		};
+		A04 /* HablemosTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = HablemosTests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A06 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B03 /* HablemosCore in Frameworks */,
+				B06 /* LiteRTLM in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A07 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A0C = {
+			isa = PBXGroup;
+			children = (
+				A03 /* Hablemos */,
+				A04 /* HablemosTests */,
+				A05 /* HablemosCore */,
+				A55 /* LiteRTLMKit */,
+				A0D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A0D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A01 /* Hablemos.app */,
+				A02 /* HablemosTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A10 /* Hablemos */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01 /* Build configuration list for PBXNativeTarget "Hablemos" */;
+			buildPhases = (
+				A08 /* Sources */,
+				A06 /* Frameworks */,
+				A0A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A03 /* Hablemos */,
+			);
+			name = Hablemos;
+			packageProductDependencies = (
+				D02 /* HablemosCore */,
+				D11 /* LiteRTLM */,
+			);
+			productName = Hablemos;
+			productReference = A01 /* Hablemos.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A11 /* HablemosTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C02 /* Build configuration list for PBXNativeTarget "HablemosTests" */;
+			buildPhases = (
+				A09 /* Sources */,
+				A07 /* Frameworks */,
+				A0B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B04 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A04 /* HablemosTests */,
+			);
+			name = HablemosTests;
+			productName = HablemosTests;
+			productReference = A02 /* HablemosTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A20 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+			};
+			buildConfigurationList = C00 /* Build configuration list for PBXProject "Hablemos" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A0C;
+			packageReferences = (
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A0D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A10 /* Hablemos */,
+				A11 /* HablemosTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A0A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A08 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A09 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B04 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10 /* Hablemos */;
+			targetProxy = B05 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		E00 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		E01 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		E10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R367684B39;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Hablemos listens to practice speaking.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Hablemos transcribes your speech.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tanmay.hablemos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		E11 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R367684B39;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Hablemos listens to practice speaking.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Hablemos transcribes your speech.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tanmay.hablemos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		E20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tanmay.hablemos.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hablemos.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Hablemos";
+			};
+			name = Debug;
+		};
+		E21 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tanmay.hablemos.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Hablemos.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Hablemos";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C00 /* Build configuration list for PBXProject "Hablemos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E00 /* Debug */,
+				E01 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01 /* Build configuration list for PBXNativeTarget "Hablemos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E10 /* Debug */,
+				E11 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C02 /* Build configuration list for PBXNativeTarget "HablemosTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E20 /* Debug */,
+				E21 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D02 /* HablemosCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HablemosCore;
+		};
+		D11 /* LiteRTLM */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LiteRTLM;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A20 /* Project object */;
+}
