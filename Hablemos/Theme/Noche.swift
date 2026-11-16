@@ -10,35 +10,41 @@ extension Color {
     }
 }
 
+/// Wine = Lucía and primary actions, teal = you and things you got right, amber = misses.
+/// Misses stay amber so they never read as the brand pink.
 enum Noche {
-    static let bg = Color(hex: 0x0F1F1C)
-    static let navBg = Color(hex: 0x0B1715)
-    static let surface = Color(hex: 0x18302B)
-    static let surfaceHi = Color(hex: 0x21403A)
-    static let surfaceSel = Color(hex: 0x2E4F48)
-    static let surfaceMint = Color(hex: 0x1F3F37)
-    static let border = Color(hex: 0x2A4842)
-    static let borderDashed = Color(hex: 0x3A5650)
+    static let bg = Color(hex: 0x0E0F13)
+    static let navBg = Color(hex: 0x121318)
+    static let surface = Color(hex: 0x181A20)
+    static let surfaceHi = Color(hex: 0x1B1D24)
+    static let surfaceSel = Color(hex: 0x2A2D36)
+    static let surfaceMint = Color(hex: 0x12211F)
+    static let border = Color(hex: 0x22242C)
+    static let borderDashed = Color(hex: 0x4A4D57)
 
-    static let text = Color(hex: 0xF3EFE6)
-    static let textMuted = Color(hex: 0xA9BDB6)
-    static let textSoft = Color(hex: 0xD9E3DF)
+    static let text = Color(hex: 0xF3F1EC)
+    static let textMuted = Color(hex: 0x9A9CA6)
+    static let textSoft = Color(hex: 0xB9BBC4)
 
-    static let saffron = Color(hex: 0xF2A65A)
-    static let onSaffron = Color(hex: 0x1A1208)
-    static let micRing = Color(hex: 0x3B3020)
-    static let mint = Color(hex: 0x7FD4BE)
+    static let brand = Color(hex: 0x8E2440)
+    static let onBrand = Color(hex: 0xFFF4F8)
+    static let brandText = Color(hex: 0xCF6E84)
+    static let brandSurface = Color(hex: 0x26141A)
+    static let brandBorder = Color(hex: 0x4A1C28)
+    static let micRing = Color(hex: 0x26141A)
+    static let mint = Color(hex: 0x5ED3C3)
+    static let onMint = Color(hex: 0x06201D)
 
-    static let coralText = Color(hex: 0xFFB59A)
-    static let coralSoft = Color(hex: 0xF3D2C2)
-    static let coralMuted = Color(hex: 0xE9C9B8)
-    static let coralAccent = Color(hex: 0xFF8A65)
-    static let coralSurface = Color(hex: 0x3A2418)
-    static let coralBorder = Color(hex: 0x8A4A2A)
+    static let missText = Color(hex: 0xFFC266)
+    static let missSoft = Color(hex: 0xFFE2B0)
+    static let missMuted = Color(hex: 0xE8CFA0)
+    static let missAccent = Color(hex: 0xFFB13D)
+    static let missSurface = Color(hex: 0x241C10)
+    static let missBorder = Color(hex: 0x6B5321)
 }
 
 extension Font {
     static func display(_ size: CGFloat, relativeTo style: Font.TextStyle = .title3) -> Font {
-        .custom("Space Grotesk", size: size, relativeTo: style).weight(.semibold)
+        .custom("Bricolage Grotesque", size: size, relativeTo: style).weight(.bold)
     }
 }

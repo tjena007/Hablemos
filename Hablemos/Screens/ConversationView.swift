@@ -28,15 +28,18 @@ struct ConversationView: View {
                 }
                 .buttonStyle(.plain)
             }
+            luciaStage
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(model.items) { item in
                             row(item, showChips: item.id == model.latestLucia?.id)
                                 .id(item.id)
+                                .transition(.asymmetric(insertion: .move(edge: .bottom).combined(with: .opacity), removal: .opacity))
                         }
                     }
                     .padding(16)
+                    .animation(.hablemos, value: model.items.count)
                 }
                 .onChange(of: model.items.count) {
                     if let last = model.items.last { withAnimation { proxy.scrollTo(last.id, anchor: .bottom) } }
@@ -44,6 +47,7 @@ struct ConversationView: View {
             }
             controls
         }
+        .sensoryFeedback(.impact(weight: .light), trigger: model.isListening)
         .task {
             model.speech = player
             await model.prepare()
@@ -54,7 +58,7 @@ struct ConversationView: View {
         .overlay {
             if model.isPreparing || model.isFinishing {
                 VStack(spacing: 12) {
-                    ProgressView().tint(Noche.saffron)
+                    ProgressView().tint(Noche.brand)
                     Text(model.isFinishing ? "Summarizing your session…" : "Waking up Lucía…")
                         .font(.subheadline)
                         .foregroundStyle(Noche.textSoft)
@@ -103,31 +107,31 @@ struct ConversationView: View {
                 Spacer(minLength: 40)
                 HStack(spacing: 12) {
                     Image(systemName: "arrow.counterclockwise")
-                        .foregroundStyle(Noche.coralAccent)
+                        .foregroundStyle(Noche.missAccent)
                         .frame(width: 40, height: 40)
-                        .background(Noche.coralSurface, in: Circle())
+                        .background(Noche.missSurface, in: Circle())
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Try that line again").font(.subheadline.weight(.semibold)).foregroundStyle(Noche.coralSoft)
-                        Text("Hold the mic and fix it yourself").font(.footnote).foregroundStyle(Noche.coralMuted)
+                        Text("Try that line again").font(.subheadline.weight(.semibold)).foregroundStyle(Noche.missSoft)
+                        Text("Hold the mic and fix it yourself").font(.footnote).foregroundStyle(Noche.missMuted)
                     }
                 }
-                .card(border: Noche.coralBorder, radius: 14, padding: EdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14))
+                .card(border: Noche.missBorder, radius: 14, padding: EdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14))
                 .frame(maxWidth: 290)
             }
         case .correction(_, let correction):
             HStack {
                 Spacer(minLength: 40)
                 VStack(alignment: .leading, spacing: 6) {
-                    UpperLabel(text: "Correction", color: Noche.coralText)
+                    UpperLabel(text: "Correction", color: Noche.missText)
                     Text("\(Text(correction.wrong).strikethrough()) → \(Text(correction.right).fontWeight(.bold))")
                         .font(.subheadline)
-                        .foregroundStyle(Noche.coralSoft)
+                        .foregroundStyle(Noche.missSoft)
                     if !correction.explanation.isEmpty {
-                        Text(correction.explanation).font(.footnote).foregroundStyle(Noche.coralMuted)
+                        Text(correction.explanation).font(.footnote).foregroundStyle(Noche.missMuted)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .card(fill: Noche.coralSurface, border: Noche.coralBorder, radius: 14, padding: EdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14))
+                .card(fill: Noche.missSurface, border: Noche.missBorder, radius: 14, padding: EdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14))
                 .frame(maxWidth: 290)
             }
         case .recastNote:
@@ -136,6 +140,37 @@ struct ConversationView: View {
                 .foregroundStyle(Noche.textMuted)
                 .frame(maxWidth: .infinity)
         }
+    }
+
+    private var mood: Orb.Mood {
+        if model.isListening { return .listening }
+        if player.isSpeaking { return .speaking }
+        if model.isReplying || model.isPreparing { return .thinking }
+        return .idle
+    }
+
+    private var moodLabel: String {
+        switch mood {
+        case .listening: "Listening"
+        case .speaking: "Lucía is speaking"
+        case .thinking: "Thinking…"
+        case .idle: "Your turn"
+        }
+    }
+
+    /// Lucía's orb reacts to the conversation: it pulses while she speaks and rings your voice while she listens.
+    private var luciaStage: some View {
+        VStack(spacing: 10) {
+            Orb(size: 84, mood: mood, level: model.level)
+            Text(moodLabel)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(mood == .listening ? Noche.mint : Noche.textMuted)
+                .contentTransition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: moodLabel)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .accessibilityElement(children: .combine)
     }
 
     private var actionChips: some View {
@@ -162,7 +197,7 @@ struct ConversationView: View {
                 .background(tint ? Noche.surfaceMint : Noche.surface, in: Capsule())
                 .overlay(Capsule().strokeBorder(tint ? Noche.micRing : Noche.border))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
     }
 
     private func end() {
@@ -203,7 +238,7 @@ struct ConversationView: View {
         var attributed = AttributedString(text)
         if let word, let range = attributed.range(of: word) {
             attributed[range].underlineStyle = .single
-            attributed[range].underlineColor = UIColor(Noche.coralAccent)
+            attributed[range].underlineColor = UIColor(Noche.missAccent)
         }
         return attributed
     }

@@ -169,6 +169,15 @@ final class ConversationViewModel {
                 vocab: summary.value?.newWords ?? []
             )
         }
+        // The session is already saved, so a failed export is reported on the summary rather than thrown.
+        let exportError: String? = userTurns.isEmpty ? nil : {
+            do {
+                try store.exportData().write(to: ProgressStore.autoExportURL, options: .atomic)
+                return nil
+            } catch {
+                return "Could not update the progress export: \(error)"
+            }
+        }()
         let profile = try store.profile()
         let rule = store.rule
         return SessionResult(
@@ -182,7 +191,8 @@ final class ConversationViewModel {
             streak: profile.level == levelBefore ? profile.strongSessionStreak : rule.strongSessionsRequired,
             streakRequired: rule.strongSessionsRequired,
             unlockedLevel: profile.level == levelBefore ? nil : profile.level,
-            summaryError: summary.error
+            summaryError: summary.error,
+            exportError: exportError
         )
     }
 

@@ -69,6 +69,7 @@ struct SessionResult {
     let streakRequired: Int
     let unlockedLevel: CEFRLevel?
     let summaryError: String?
+    let exportError: String?
 
     static var demo: SessionResult {
         SessionResult(
@@ -85,7 +86,8 @@ struct SessionResult {
             streak: 2,
             streakRequired: 3,
             unlockedLevel: nil,
-            summaryError: nil
+            summaryError: nil,
+            exportError: nil
         )
     }
 }

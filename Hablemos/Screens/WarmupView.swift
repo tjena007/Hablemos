@@ -24,6 +24,7 @@ final class WarmupViewModel {
     private let locale: Locale
     private var listenTask: Task<String, Never>?
     private var silenceTask: Task<Void, Never>?
+    private var stopping: Task<Void, Never>?
     private var attempt: UUID?
 
     init(warmup: Warmup, review: [WarmupItem], stt: SpeechToText, locale: Locale) {
@@ -62,11 +63,14 @@ final class WarmupViewModel {
         progress = PhraseMatcher.progress(heard: [], target: target)
         let attempt = UUID()
         self.attempt = attempt
-        let stream = stt.startListening(locale: locale)
+        let previousStop = stopping
         listenTask = Task {
             var text = ""
-            for await update in stream {
-                // A cancelled attempt's late results must not grade the next step.
+            // The recognizer may still be finalizing the last attempt; starting over it would cut this one off.
+            await previousStop?.value
+            guard self.attempt == attempt else { return text }
+            for await update in stt.startListening(locale: locale) {
+                // A cancelled attempt's late results must not grade the next one.
                 guard self.attempt == attempt else { break }
                 let changed = update.text != text
                 if changed {
@@ -76,8 +80,9 @@ final class WarmupViewModel {
                 // Once stopping, only collect the final text; a timer armed now would cut the next attempt short.
                 guard isListening else { continue }
                 if progress.isComplete {
-                    silenceTask?.cancel()
-                    Task { await endListening() }
+                    // Every word is in, so grade now, like Duolingo; the recognizer finalizes in the background.
+                    heard = text
+                    cancelListening()
                 } else if changed || silenceTask == nil {
                     restartSilenceTimer()
                 }
@@ -88,13 +93,19 @@ final class WarmupViewModel {
         }
     }
 
+    /// Waits for the recognizer's final pass, which often catches short words the live results missed.
     func endListening() async {
         guard isListening, let listenTask else { return }
+        let attempt = attempt
         isListening = false
         silenceTask?.cancel()
         silenceTask = nil
-        await stt.stopListening()
-        heard = await listenTask.value
+        let stop = Task { await stt.stopListening() }
+        stopping = stop
+        await stop.value
+        let text = await listenTask.value
+        guard self.attempt == attempt else { return }
+        heard = text
         if !isCorrect { misses += 1 }
     }
 
@@ -106,7 +117,7 @@ final class WarmupViewModel {
         silenceTask?.cancel()
         silenceTask = nil
         listenTask = nil
-        Task { await stt.stopListening() }
+        stopping = Task { await stt.stopListening() }
     }
 
     /// Duolingo's timeout: 5 s with nothing heard, down to 1 s when the phrase is almost done.
@@ -150,9 +161,20 @@ struct WarmupView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     SegmentProgress(total: model.steps.count, filled: model.index + 1)
+                        .animation(.hablemos, value: model.index)
                     promptCard
-                    if let heard = model.heard { resultCard(heard: heard) }
+                        .id(model.index)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
+                    if let heard = model.heard {
+                        resultCard(heard: heard)
+                            .transition(.move(edge: .bottom).combined(with: .opacity).combined(with: .scale(scale: 0.96)))
+                    }
                 }
+                .animation(.hablemos, value: model.index)
+                .animation(.hablemos, value: model.heard)
                 .padding(.horizontal, 20)
                 .padding(.top, 14)
             }
@@ -176,6 +198,10 @@ struct WarmupView: View {
         }
         .task(id: model.index) { player.say(model.step.item.spanish.replacingOccurrences(of: "…", with: "")) }
         .onDisappear { model.cancelListening() }
+        .sensoryFeedback(.impact(weight: .light), trigger: model.isListening)
+        .sensoryFeedback(trigger: model.heard) { _, heard in
+            heard == nil ? nil : (model.isCorrect ? .success : .warning)
+        }
     }
 
     private var headerTitle: String {
@@ -248,15 +274,19 @@ struct WarmupView: View {
         let isCorrect = model.isCorrect
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
-                UpperLabel(text: "You said", color: isCorrect ? Noche.mint : Noche.coralText)
+                UpperLabel(text: "You said", color: isCorrect ? Noche.mint : Noche.missText)
                 Spacer()
+                Image(systemName: isCorrect ? "checkmark.circle.fill" : "arrow.counterclockwise.circle.fill")
+                    .foregroundStyle(isCorrect ? Noche.mint : Noche.missText)
+                    .symbolEffect(.bounce, value: heard)
+                    .accessibilityHidden(true)
                 Text(isCorrect ? "Correct" : "Not quite")
                     .font(.footnote.weight(.semibold))
-                    .foregroundStyle(isCorrect ? Noche.mint : Noche.coralText)
+                    .foregroundStyle(isCorrect ? Noche.mint : Noche.missText)
             }
             Text(heard.isEmpty ? "Didn't catch that. Try again." : heard)
                 .font(.title3)
-                .foregroundStyle(isCorrect ? Noche.text : Noche.coralSoft)
+                .foregroundStyle(isCorrect ? Noche.text : Noche.missSoft)
             if !isCorrect, !heard.isEmpty {
                 Text("Missed: \(model.progress.missedWords.joined(separator: " "))")
                     .font(.footnote)
@@ -265,8 +295,8 @@ struct WarmupView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .card(
-            fill: isCorrect ? Noche.surfaceMint : Noche.coralSurface,
-            border: isCorrect ? .clear : Noche.coralBorder,
+            fill: isCorrect ? Noche.surfaceMint : Noche.missSurface,
+            border: isCorrect ? .clear : Noche.missBorder,
             borderWidth: isCorrect ? 0 : 1,
             radius: 18,
             padding: EdgeInsets(top: 16, leading: 18, bottom: 16, trailing: 18)

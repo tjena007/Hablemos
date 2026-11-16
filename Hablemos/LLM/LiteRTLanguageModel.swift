@@ -4,6 +4,10 @@ import LiteRTLM
 
 actor LiteRTEngineHost {
     private var engine: Engine?
+    // LiteRT's last stream callback drops its reference on LiteRT's callback thread; if that is the final
+    // one, deleting the conversation there waits on that same thread forever. Holding it here keeps the delete on this actor.
+    // shortcut: a call started while another still streams (Translate during a reply) can still drop the older one last; keep every live conversation if that shows up.
+    private var lastConversation: Conversation?
     private(set) var loadedVariant: ModelVariant?
 
     var isLoaded: Bool { engine != nil }
@@ -16,6 +20,7 @@ actor LiteRTEngineHost {
             cacheDir: FileManager.default.temporaryDirectory.path
         )
         // A second engine cannot be created while the first is alive (litert_lm_engine_create fails).
+        lastConversation = nil
         engine = nil
         loadedVariant = nil
         let newEngine = Engine(engineConfig: config)
@@ -25,6 +30,7 @@ actor LiteRTEngineHost {
     }
 
     func unload() {
+        lastConversation = nil
         engine = nil
         loadedVariant = nil
     }
@@ -38,7 +44,10 @@ actor LiteRTEngineHost {
             samplerConfig: try SamplerConfig(topK: 40, topP: 0.95, temperature: 0.7),
             enableResponseFormat: responseFormat
         )
-        return try await engine.createConversation(with: config)
+        lastConversation = nil
+        let conversation = try await engine.createConversation(with: config)
+        lastConversation = conversation
+        return conversation
     }
 
     enum HostError: Error { case notLoaded }

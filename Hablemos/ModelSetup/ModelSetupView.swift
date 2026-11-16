@@ -78,7 +78,7 @@ struct ModelSetupView: View {
             }
             .card(
                 fill: isSelected ? Noche.surfaceSel : Noche.surface,
-                border: isSelected ? Noche.saffron : Noche.border
+                border: isSelected ? Noche.brand : Noche.border
             )
         }
         .buttonStyle(.plain)
@@ -131,8 +131,8 @@ struct ModelSetupView: View {
     private func errorText(_ message: String) -> some View {
         Text(message)
             .font(.footnote)
-            .foregroundStyle(Noche.coralText)
-            .card(fill: Noche.coralSurface, border: Noche.coralBorder)
+            .foregroundStyle(Noche.missText)
+            .card(fill: Noche.missSurface, border: Noche.missBorder)
     }
 
     private func bytes(_ count: Int64) -> String {

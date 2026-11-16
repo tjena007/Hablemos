@@ -12,6 +12,7 @@ final class LearnerProfile {
     var voiceIdentifier: String?
     var ttsRateOverride: Float?
     var useE2BModel: Bool = false
+    var useAppleModel: Bool = false
 
     var level: CEFRLevel {
         get { CEFRLevel(rawValue: levelRaw) ?? .a1 }

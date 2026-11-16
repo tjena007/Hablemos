@@ -8,14 +8,14 @@ enum Route {
 }
 
 enum HomeTab {
-    case practice, progress, review
+    case today, path, phrases, me
 }
 
 @MainActor
 @Observable
 final class AppModel {
     var route: Route = ProcessInfo.processInfo.arguments.contains("-autoSpike") ? .spike : .home
-    var tab: HomeTab = .practice
+    var tab: HomeTab = .today
     var errorMessage: String?
     private(set) var setup: SessionSetup?
     private(set) var result: SessionResult?
@@ -23,6 +23,12 @@ final class AppModel {
     private(set) var warmupReview: [WarmupItem] = []
     private(set) var warmupLocale = Locale(identifier: "es-MX")
     let engineHost = LiteRTEngineHost()
+    private(set) var warmupDoneOn = UserDefaults.standard.object(forKey: "warmupDoneOn") as? Date {
+        didSet { UserDefaults.standard.set(warmupDoneOn, forKey: "warmupDoneOn") }
+    }
+
+    /// Today's warm-up is done but the conversation isn't, so the session resumes at Lucía.
+    var isWarmupDoneToday: Bool { warmupDoneOn.map(Calendar.current.isDateInToday) ?? false }
 
     static let isSimulator: Bool = {
         #if targetEnvironment(simulator)
@@ -38,13 +44,16 @@ final class AppModel {
 
     func finish(with result: SessionResult) {
         self.result = result
+        warmupDoneOn = nil
         route = .summary
     }
 
-    func beginSession(useE2B: Bool, context: ModelContext) {
+    func beginSession(useE2B: Bool, useApple: Bool, context: ModelContext) {
         let variant: ModelVariant = useE2B ? .e2b : .e4b
-        if !Self.isSimulator && !ModelStore.isInstalled(variant) {
+        if !useApple && !Self.isSimulator && !ModelStore.isInstalled(variant) {
             route = .modelSetup
+        } else if isWarmupDoneToday {
+            startConversation(context: context)
         } else {
             startWarmup(context: context)
         }
@@ -87,6 +96,7 @@ final class AppModel {
     }
 
     func startConversation(context: ModelContext) {
+        warmupDoneOn = .now
         do {
             let store = ProgressStore(context: context)
             let profile = try store.profile()
@@ -104,14 +114,14 @@ final class AppModel {
                 focusWords: Warmup.forScenario(scenario.id).focusWords,
                 opening: Self.opening(for: scenario)
             )
-            setup = SessionSetup(config: config, services: makeServices(variant: profile.useE2BModel ? .e2b : .e4b))
+            setup = SessionSetup(config: config, services: makeServices(variant: profile.useE2BModel ? .e2b : .e4b, useApple: profile.useAppleModel))
             route = .conversation
         } catch {
             errorMessage = "Could not start the session: \(error)"
         }
     }
 
-    private func makeServices(variant: ModelVariant) -> SessionServices {
+    private func makeServices(variant: ModelVariant, useApple: Bool) -> SessionServices {
         #if targetEnvironment(simulator)
         return .mock
         #else
@@ -120,8 +130,8 @@ final class AppModel {
         return SessionServices(
             stt: stt,
             sttErrors: stt.errors,
-            lm: LiteRTLanguageModel(host: host),
-            prepare: {
+            lm: useApple ? AppleLanguageModel() : LiteRTLanguageModel(host: host),
+            prepare: useApple ? { @Sendable in try AppleLanguageModel.checkAvailable() } : { @Sendable in
                 if await host.loadedVariant != variant { try await host.load(variant) }
             },
             isLive: true

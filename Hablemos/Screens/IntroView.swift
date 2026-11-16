@@ -14,9 +14,13 @@ struct IntroView: View {
         ZStack {
             Noche.bg.ignoresSafeArea()
             VStack(spacing: 14) {
+                Orb(size: 112, mood: showHola ? .speaking : .idle)
+                    .opacity(showHola ? 1 : 0)
+                    .scaleEffect(showHola ? 1 : 0.4)
+                    .padding(.bottom, 12)
                 Text("¡Hola!")
                     .font(.display(56, relativeTo: .largeTitle))
-                    .foregroundStyle(Noche.saffron)
+                    .foregroundStyle(Noche.brandText)
                     .opacity(showHola ? 1 : 0)
                     .scaleEffect(showHola ? 1 : 0.7)
                     .offset(y: showHola ? 0 : 16)

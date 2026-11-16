@@ -82,7 +82,7 @@ struct ProgressTabView: View {
         return VStack(spacing: 6) {
             Image(systemName: isDone ? "checkmark.circle.fill" : isCurrent ? "circle.inset.filled" : "circle")
                 .font(.title3)
-                .foregroundStyle(isDone || isCurrent ? Noche.saffron : Noche.borderDashed)
+                .foregroundStyle(isDone || isCurrent ? Noche.brand : Noche.borderDashed)
             Text(level.rawValue)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(isCurrent ? Noche.text : Noche.textMuted)
@@ -124,23 +124,23 @@ struct ProgressTabView: View {
             HStack {
                 Text(MistakeTally.displayName(for: stat.category))
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Noche.coralText)
+                    .foregroundStyle(Noche.missText)
                 Spacer()
                 Text("\(stat.count)")
                     .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(Noche.saffron)
+                    .foregroundStyle(Noche.brand)
             }
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Noche.coralSurface)
-                    Capsule().fill(Color(hex: 0xE07A2E)).frame(width: proxy.size.width * fraction)
+                    Capsule().fill(Noche.missSurface)
+                    Capsule().fill(Noche.brandText).frame(width: proxy.size.width * fraction)
                 }
             }
             .frame(height: 8)
             if !stat.example.isEmpty {
                 Text(stat.example)
                     .font(.caption)
-                    .foregroundStyle(Noche.coralMuted)
+                    .foregroundStyle(Noche.missMuted)
             }
         }
         .accessibilityElement(children: .combine)

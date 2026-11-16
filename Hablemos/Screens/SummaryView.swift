@@ -8,22 +8,27 @@ struct SummaryView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("\(result.scenarioTitle) · \(max(1, Int(result.durationSeconds / 60))) min").font(.subheadline).foregroundStyle(Noche.textMuted)
-                    Text("¡Bien hecho!")
-                        .font(.display(30, relativeTo: .largeTitle))
-                        .tracking(-0.5)
-                        .accessibilityAddTraits(.isHeader)
+                HStack(spacing: 16) {
+                    Orb(size: 64, mood: .speaking)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(result.scenarioTitle) · \(max(1, Int(result.durationSeconds / 60))) min").font(.subheadline).foregroundStyle(Noche.textMuted)
+                        Text("¡Bien hecho!")
+                            .font(.display(30, relativeTo: .largeTitle))
+                            .tracking(-0.5)
+                            .accessibilityAddTraits(.isHeader)
+                    }
                 }
+                .entrance(0)
                 HStack(spacing: 10) {
                     StatTile(value: String(format: "%.1f", result.metrics.wordsPerTurn), label: "words / turn")
                     StatTile(value: String(format: "%.1f", result.metrics.errorsPerTurn), label: "errors / turn")
                     StatTile(value: "\(result.metrics.turns)", label: "turns")
                     StatTile(value: "\(result.metrics.englishSwitches)", label: "English switches")
                 }
-                promotionBanner
-                if let error = result.summaryError {
-                    Text(error).font(.footnote).foregroundStyle(Noche.coralText)
+                .entrance(1)
+                promotionBanner.entrance(2)
+                ForEach([result.summaryError, result.exportError].compactMap(\.self), id: \.self) { error in
+                    Text(error).font(.footnote).foregroundStyle(Noche.missText)
                 }
                 if !result.mistakes.isEmpty {
                     SectionHeading(text: "Say these lines correctly")
@@ -88,13 +93,13 @@ struct SummaryView: View {
             Spacer()
             Image(systemName: isDone ? "checkmark" : "mic.fill")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(isDone ? Noche.mint : Noche.onSaffron)
+                .foregroundStyle(isDone ? Noche.mint : Noche.onBrand)
                 .frame(width: 40, height: 40)
-                .background(isDone ? Noche.surfaceMint : Noche.saffron, in: Circle())
+                .background(isDone ? Noche.surfaceMint : Noche.brand, in: Circle())
                 .accessibilityLabel(isDone ? "Practiced" : "Practice now")
         }
         .card(
-            border: isDone ? Noche.border : Noche.saffron,
+            border: isDone ? Noche.border : Noche.brand,
             borderWidth: isDone ? 1 : 2,
             radius: 14
         )

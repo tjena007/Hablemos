@@ -97,6 +97,8 @@ final class SpeechPlayer {
         self.locale = locale
     }
 
+    var isSpeaking: Bool { worker != nil }
+
     func say(_ text: String, rate: Float = 0.45) {
         reset()
         enqueue(text, rate: rate)

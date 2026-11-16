@@ -64,11 +64,11 @@ struct PrimaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(.body.weight(.semibold))
-                .foregroundStyle(Noche.onSaffron)
+                .foregroundStyle(Noche.onBrand)
                 .frame(maxWidth: .infinity, minHeight: height)
-                .background(Noche.saffron, in: RoundedRectangle(cornerRadius: 16))
+                .background(Noche.brand, in: RoundedRectangle(cornerRadius: 18))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
     }
 }
 
@@ -86,7 +86,7 @@ struct SecondaryButton: View {
                 .background(Noche.surface, in: RoundedRectangle(cornerRadius: 16))
                 .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Noche.border))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
     }
 }
 
@@ -105,43 +105,65 @@ struct OutlinePill: View {
                 .background(isOn ? Noche.surfaceSel : .clear, in: Capsule())
                 .overlay(Capsule().strokeBorder(Noche.border))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
     }
 }
 
 struct PlayCircle: View {
     var size: CGFloat = 36
-    var fill: Color = Noche.surfaceMint
+    var fill: Color = Noche.brandSurface
     var action: () -> Void = {}
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: "play.fill")
-                .font(.system(size: size * 0.4))
-                .foregroundStyle(Noche.mint)
+            Image(systemName: "speaker.wave.2.fill")
+                .font(.system(size: size * 0.38))
+                .foregroundStyle(Noche.brandText)
                 .frame(width: size, height: size)
                 .background(fill, in: Circle())
                 .frame(minWidth: 44, minHeight: 44)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
         .accessibilityLabel("Play")
     }
 }
 
+/// Wine while idle; teal with rings rippling out while it listens to you.
 private struct MicCircle: View {
     let systemImage: String
     var isActive = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Image(systemName: systemImage)
-            .font(.system(size: 28, weight: .medium))
-            .foregroundStyle(Noche.onSaffron)
-            .frame(width: 76, height: 76)
-            .background(Noche.saffron, in: Circle())
-            .overlay(Circle().strokeBorder(Noche.micRing, lineWidth: 6).padding(-6))
-            .scaleEffect(isActive ? 1.08 : 1)
-            .animation(.spring(duration: 0.2), value: isActive)
-            .padding(6)
+            .font(.system(size: 30, weight: .medium))
+            .foregroundStyle(isActive ? Noche.onMint : Noche.onBrand)
+            .contentTransition(.symbolEffect(.replace))
+            .frame(width: 84, height: 84)
+            .background(isActive ? Noche.mint : Noche.brand, in: Circle())
+            .background { if isActive && !reduceMotion { PulseRings(color: Noche.mint) } }
+            .scaleEffect(isActive ? 1.06 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isActive)
+            .padding(12)
+    }
+}
+
+private struct PulseRings: View {
+    let color: Color
+
+    var body: some View {
+        TimelineView(.animation) { context in
+            let time = context.date.timeIntervalSinceReferenceDate
+            ZStack {
+                ForEach(0..<2, id: \.self) { ring in
+                    let phase = (time / 1.6 + Double(ring) / 2).truncatingRemainder(dividingBy: 1)
+                    Circle()
+                        .fill(color.opacity(0.28 * (1 - phase)))
+                        .scaleEffect(1 + phase * 0.6)
+                }
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
 
@@ -182,7 +204,7 @@ struct TapToTalkButton: View {
         Button(action: action) {
             MicCircle(systemImage: isListening ? "stop.fill" : "mic.fill", isActive: isListening)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
         .accessibilityLabel(isListening ? "Stop listening" : "Start talking")
     }
 }
@@ -195,7 +217,7 @@ struct PlayToggleButton: View {
         Button(action: action) {
             MicCircle(systemImage: isPlaying ? "pause.fill" : "play.fill", isActive: isPlaying)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
         .accessibilityLabel(isPlaying ? "Stop" : "Play and record")
     }
 }
@@ -274,7 +296,7 @@ struct SegmentProgress: View {
         HStack(spacing: 6) {
             ForEach(0..<total, id: \.self) { index in
                 RoundedRectangle(cornerRadius: height / 2)
-                    .fill(index < filled ? Noche.saffron : emptyColor)
+                    .fill(index < filled ? Noche.brand : emptyColor)
                     .frame(height: height)
             }
         }
@@ -290,7 +312,7 @@ struct ThinProgressBar: View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Rectangle().fill(Noche.surfaceHi)
-                Rectangle().fill(Noche.saffron).frame(width: proxy.size.width * fraction)
+                Rectangle().fill(Noche.brand).frame(width: proxy.size.width * fraction)
             }
         }
         .frame(height: 4)
@@ -351,7 +373,7 @@ struct SpeedSegmentedControl: View {
                         .frame(maxWidth: .infinity, minHeight: 40)
                         .background(option == selection ? Noche.surfaceSel : .clear, in: RoundedRectangle(cornerRadius: 9))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableStyle())
                 .accessibilityAddTraits(option == selection ? .isSelected : [])
             }
         }
@@ -381,4 +403,121 @@ func highlighted(_ text: String, word: String?, color: Color) -> AttributedStrin
     attributed[range].foregroundColor = color
     attributed[range].inlinePresentationIntent = .stronglyEmphasized
     return attributed
+}
+
+// MARK: Motion
+
+extension Animation {
+    /// Screens and sheets push in with this spring.
+    static let hablemos = Animation.spring(response: 0.45, dampingFraction: 0.85)
+}
+
+struct PressableStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .opacity(configuration.isPressed ? 0.9 : 1)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+/// Content rises into place 50 ms apart when a screen appears; only fades with Reduce Motion.
+private struct Entrance: ViewModifier {
+    let index: Int
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isShown = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isShown ? 1 : 0)
+            .offset(y: isShown || reduceMotion ? 0 : 16)
+            .onAppear {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.85).delay(Double(index) * 0.05)) { isShown = true }
+            }
+    }
+}
+
+extension View {
+    func entrance(_ index: Int) -> some View { modifier(Entrance(index: index)) }
+}
+
+/// Lucía. Breathes while idle, pulses while she speaks, and wears a teal ring that follows your voice while she listens.
+struct Orb: View {
+    enum Mood { case idle, listening, thinking, speaking }
+
+    var size: CGFloat = 72
+    var mood: Mood = .idle
+    var level: Float = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        TimelineView(.animation(paused: reduceMotion)) { context in
+            let time = context.date.timeIntervalSinceReferenceDate
+            Circle()
+                .fill(RadialGradient(
+                    colors: [Color(hex: 0xF2B8C4), Color(hex: 0xC2546E), Noche.brand, Color(hex: 0x3E0A18)],
+                    center: UnitPoint(x: 0.34, y: 0.3), startRadius: 0, endRadius: size * 0.75
+                ))
+                .overlay { if mood == .speaking && !reduceMotion { shimmer(at: time) } }
+                .shadow(color: Noche.brand.opacity(mood == .speaking ? 0.6 : 0.35), radius: size * 0.33)
+                .background { if mood == .speaking && !reduceMotion { glow(at: time) } }
+                .scaleEffect(reduceMotion ? 1 : scale(at: time))
+                .overlay {
+                    if mood == .listening {
+                        Circle()
+                            .strokeBorder(Noche.mint, lineWidth: max(2, size * 0.04))
+                            .scaleEffect(1.14 + CGFloat(min(level, 1)) * 0.22)
+                            .animation(.easeOut(duration: 0.12), value: level)
+                    }
+                }
+                .frame(width: size, height: size)
+        }
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: mood)
+        .accessibilityHidden(true)
+    }
+
+    /// Two out-of-step waves, so the glow swells like a voice rather than a metronome.
+    private func voice(at time: Double) -> Double {
+        0.5 + 0.3 * sin(time * 2 * .pi / 0.9) + 0.2 * sin(time * 2 * .pi / 0.37)
+    }
+
+    private func glow(at time: Double) -> some View {
+        let pulse = CGFloat(voice(at: time))
+        return ZStack {
+            Circle()
+                .fill(Color(hex: 0xE07A93).opacity(0.35 + 0.25 * pulse))
+                .blur(radius: size * 0.32)
+                .scaleEffect(1.25 + 0.3 * pulse)
+            Circle()
+                .fill(AngularGradient(
+                    colors: [Color(hex: 0xF2B8C4), .clear, Noche.brand, .clear, Color(hex: 0xF2B8C4)],
+                    center: .center,
+                    angle: .degrees(time * 50)
+                ))
+                .blur(radius: size * 0.14)
+                .scaleEffect(1.15 + 0.12 * pulse)
+                .opacity(0.85)
+        }
+        .allowsHitTesting(false)
+    }
+
+    /// A soft highlight that drifts across her surface while she talks.
+    private func shimmer(at time: Double) -> some View {
+        Circle()
+            .fill(AngularGradient(
+                colors: [.white.opacity(0.35), .clear, .clear, .white.opacity(0.15), .clear],
+                center: .center,
+                angle: .degrees(-time * 80)
+            ))
+            .blendMode(.plusLighter)
+            .clipShape(Circle())
+    }
+
+    private func scale(at time: Double) -> CGFloat {
+        switch mood {
+        case .idle, .listening: 0.995 + 0.035 * sin(time * .pi / 2)
+        case .thinking: 1 + 0.02 * sin(time * 2 * .pi / 0.8)
+        case .speaking: 1.04 + 0.04 * sin(time * 2 * .pi / 1.1)
+        }
+    }
 }

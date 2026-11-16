@@ -69,6 +69,9 @@ struct ProgressStore {
         return session
     }
 
+    /// Rewritten after every session so the latest progress can be copied off a connected iPhone.
+    static var autoExportURL: URL { URL.documentsDirectory.appending(path: "hablemos-progress.json") }
+
     private func tally(_ mistakes: [MistakeRecord], at date: Date) throws {
         for mistake in mistakes {
             let category = mistake.category

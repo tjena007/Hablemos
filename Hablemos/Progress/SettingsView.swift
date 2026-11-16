@@ -75,12 +75,12 @@ struct SettingsView: View {
             SectionHeading(text: "Speaking speed")
             Toggle("Automatic", isOn: automatic)
                 .foregroundStyle(Noche.textSoft)
-                .tint(Noche.saffron)
+                .tint(Noche.brand)
             Slider(
                 value: rate,
                 in: Double(AVSpeechUtteranceMinimumSpeechRate)...Double(AVSpeechUtteranceMaximumSpeechRate)
             )
-            .tint(Noche.saffron)
+            .tint(Noche.brand)
             .disabled(automatic.wrappedValue)
             .accessibilityLabel("Speaking speed")
         }
@@ -95,7 +95,12 @@ struct SettingsView: View {
                 Text("E2B").tag(true)
             }
             .pickerStyle(.segmented)
+            .disabled(profile.wrappedValue.useAppleModel)
             Text("E4B is more accurate. E2B is smaller and faster.")
+                .font(.caption)
+                .foregroundStyle(Noche.textMuted)
+            Toggle("Use Apple's model instead", isOn: profile.useAppleModel)
+            Text("Experimental. Apple Intelligence's built-in model; no download, but needs Apple Intelligence turned on.")
                 .font(.caption)
                 .foregroundStyle(Noche.textMuted)
         }
@@ -123,7 +128,7 @@ struct SettingsView: View {
                                 .foregroundStyle(Noche.textMuted)
                         }
                         Spacer()
-                        if selected { Image(systemName: "checkmark").foregroundStyle(Noche.saffron) }
+                        if selected { Image(systemName: "checkmark").foregroundStyle(Noche.brand) }
                     }
                     .padding(.vertical, 8)
                     .contentShape(Rectangle())
