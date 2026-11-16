@@ -15,5 +15,6 @@ struct WarmupTests {
         let cafe = LevelsConfig.default.scenarios[0]
         #expect(PromptBuilder.systemPrompt(level: level, scenario: cafe, focusWords: ["un café"]).contains("un café"))
         #expect(!PromptBuilder.systemPrompt(level: level, scenario: cafe).contains("just practiced"))
+        #expect(PromptBuilder.systemPrompt(level: level, scenario: cafe, focusWords: ["un café"]).contains("at most one new word"))
     }
 }

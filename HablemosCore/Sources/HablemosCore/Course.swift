@@ -25,6 +25,9 @@ public enum Course {
     /// A lesson counts as done once a saved conversation for it had at least this many learner turns.
     public static let turnsToComplete = 3
 
+    /// After this many learner turns Lucía says goodbye and the session ends on its own.
+    public static let turnsPerConversation = 5
+
     public static func lesson(_ id: String) -> Lesson? {
         lessons.first { $0.id == id }
     }

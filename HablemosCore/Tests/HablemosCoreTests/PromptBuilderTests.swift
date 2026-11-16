@@ -20,6 +20,24 @@ struct PromptBuilderTests {
         #expect(!prompt.contains("ignored"))
     }
 
+    @Test func wrapUpSaysGoodbyeInsteadOfAsking() {
+        let prompt = PromptBuilder.systemPrompt(level: a1, scenario: cafe, wrapUp: true)
+        #expect(prompt.contains("warm goodbye"))
+        #expect(!prompt.contains("moving with a question"))
+    }
+
+    @Test func parsesSuggestionLinesAndSkipsJunk() {
+        let raw = """
+        Here you go:
+        1. Bien, gracias. ¿Y tú? | Fine, thanks. And you?
+        - Me llamo Ana. | My name is Ana.
+        """
+        #expect(PromptBuilder.parseSuggestions(raw) == [
+            WarmupItem("Bien, gracias. ¿Y tú?", "Fine, thanks. And you?"),
+            WarmupItem("Me llamo Ana.", "My name is Ana."),
+        ])
+    }
+
     @Test func noWeakSpotsOmitsLine() {
         #expect(!PromptBuilder.systemPrompt(level: a1, scenario: cafe).contains("Naturally create chances"))
     }

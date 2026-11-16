@@ -77,7 +77,12 @@ struct ConversationView: View {
         .fullScreenCover(isPresented: $showShadow) {
             ShadowView(text: model.latestLucia?.text ?? "", translation: model.latestLucia.flatMap { model.translations[$0.id] }, onClose: { showShadow = false })
         }
-        .sheet(isPresented: $showHint) { HintSheet(warmup: Warmup.forScenario(model.scenario.id)) }
+        .sheet(isPresented: $showHint) {
+            HintSheet(suggestions: model.latestLucia.flatMap { model.suggestions[$0.id] }, warmup: Warmup.forScenario(model.scenario.id))
+        }
+        .onChange(of: model.isConcluded && !player.isSpeaking) { _, done in
+            if done { end() }
+        }
     }
 
     @ViewBuilder
@@ -221,6 +226,7 @@ struct ConversationView: View {
     }
 
     private func end() {
+        guard !model.isFinishing else { return }
         Task {
             do {
                 let result = try await model.finish(store: ProgressStore(context: modelContext))
@@ -237,7 +243,12 @@ struct ConversationView: View {
 
     private var controls: some View {
         BottomActionBar(caption: caption) {
-            OutlinePill(title: "Hint") { showHint = true }
+            OutlinePill(title: "Hint") {
+                showHint = true
+                Task { await model.suggestReplies() }
+            }
+            // One model call at a time: the hint waits until Lucía's reply is in.
+            .disabled(model.isReplying)
         } center: {
             HoldToTalkButton(
                 onPress: { model.beginListening() },
@@ -250,6 +261,7 @@ struct ConversationView: View {
 
     private var caption: String {
         if model.isListening { return model.liveTranscript.isEmpty ? "Listening…" : model.liveTranscript }
+        if model.isConcluded { return "Lucía is saying goodbye…" }
         if model.isReplying { return "Lucía is replying…" }
         return "Hold to talk"
     }
@@ -269,28 +281,43 @@ struct ConversationView: View {
 #Preview("Correction card") { ConversationView(style: .explicit, onEnd: { _ in }).background(Noche.bg).preferredColorScheme(.dark).environment(SpeechPlayer(tts: MockTextToSpeech())) }
 
 private struct HintSheet: View {
+    /// Replies to Lucía's latest line; nil while they're being written.
+    let suggestions: [WarmupItem]?
     let warmup: Warmup
     @Environment(SpeechPlayer.self) private var player
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                SectionHeading(text: "Things you could say")
-                ForEach(warmup.sentences + warmup.words, id: \.spanish) { item in
-                    HStack(spacing: 12) {
-                        PlayCircle(size: 36) { player.say(item.spanish) }
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(item.spanish).font(.callout.weight(.medium))
-                            Text(item.english).font(.footnote).foregroundStyle(Noche.textMuted)
-                        }
+                SectionHeading(text: "You could reply")
+                if let suggestions {
+                    ForEach(suggestions, id: \.spanish, content: phrase)
+                } else {
+                    HStack(spacing: 10) {
+                        ProgressView().tint(Noche.brandText)
+                        Text("Thinking of replies…").font(.footnote).foregroundStyle(Noche.textMuted)
                     }
-                    .accessibilityElement(children: .combine)
                 }
+                SectionHeading(text: "Words from the warm-up")
+                    .padding(.top, 8)
+                ForEach(warmup.words, id: \.spanish, content: phrase)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
         }
         .background(Noche.bg)
         .presentationDetents([.medium, .large])
+        .animation(.hablemos, value: suggestions)
+    }
+
+    private func phrase(_ item: WarmupItem) -> some View {
+        HStack(spacing: 12) {
+            PlayCircle(size: 36) { player.say(item.spanish) }
+            VStack(alignment: .leading, spacing: 1) {
+                Text(item.spanish).font(.callout.weight(.medium))
+                Text(item.english).font(.footnote).foregroundStyle(Noche.textMuted)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }

@@ -37,6 +37,9 @@ final class ConversationViewModel {
     private(set) var liveTranscript = ""
     private(set) var level: Float = 0
     private(set) var translations: [UUID: String] = [:]
+    private(set) var suggestions: [UUID: [WarmupItem]] = [:]
+    /// Lucía has said goodbye; the view ends the session once she stops speaking.
+    private(set) var isConcluded = false
     var errorMessage: String?
     var speech: SpeechPlayer?
 
@@ -107,8 +110,22 @@ final class ConversationViewModel {
         translations[line.id] = translated.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    func suggestReplies() async {
+        guard let line = latestLucia, suggestions[line.id] == nil, !isReplying else { return }
+        let system = "You help a Spanish learner find something to say next in a conversation."
+        var raw = ""
+        do {
+            let prompt = PromptBuilder.suggestionsPrompt(level: config.level.level, luciaSaid: line.text)
+            for try await token in services.lm.stream(system: system, history: [], user: prompt) { raw += token }
+        } catch {
+            errorMessage = "Could not suggest replies: \(error)"
+            return
+        }
+        suggestions[line.id] = PromptBuilder.parseSuggestions(raw)
+    }
+
     func beginListening() {
-        guard !isListening, !isReplying, !isPreparing else { return }
+        guard !isListening, !isReplying, !isPreparing, !isConcluded else { return }
         speech?.stop()
         isListening = true
         liveTranscript = ""
@@ -237,7 +254,8 @@ final class ConversationViewModel {
         items.append(.user(text: heard, errorWord: nil))
         userTurns.append(UserTurn(text: heard, pauseBeforeSeconds: pendingPause))
 
-        let system = PromptBuilder.systemPrompt(level: config.level, scenario: config.scenario, weakSpots: config.weakSpots, focusWords: config.focusWords)
+        let wrapUp = userTurns.count >= Course.turnsPerConversation
+        let system = PromptBuilder.systemPrompt(level: config.level, scenario: config.scenario, weakSpots: config.weakSpots, focusWords: config.focusWords, wrapUp: wrapUp)
         let context = PromptBuilder.buildHistory(turns: history, summary: nil)
         var raw = ""
         var chunker = SentenceChunker()
@@ -264,6 +282,7 @@ final class ConversationViewModel {
         }
         append(parsed)
         lastLuciaDone = Date()
+        if wrapUp { isConcluded = true }
     }
 
     private func underlineError(of correction: Correction, in heard: String) {
