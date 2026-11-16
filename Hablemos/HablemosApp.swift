@@ -50,7 +50,7 @@ struct RootView: View {
                         onClose: { model.go(.home) }
                     )
                 }
-            case .conversation: ConversationView(setup: model.setup, onEnd: { model.finish(with: $0) })
+            case .conversation: ConversationView(setup: model.setup, onEnd: { model.finish(with: $0) }, onPause: { model.go(.home) })
             case .spike: SpikeView(host: model.engineHost, onClose: { model.go(.home) })
             case .summary: SummaryView(result: model.result ?? .demo, onRoundTwo: { model.startConversation(context: modelContext) }, onDone: { model.go(.home) })
                 }

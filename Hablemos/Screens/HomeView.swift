@@ -15,7 +15,15 @@ struct HomeView: View {
 
     private var profile: LearnerProfile? { profiles.first }
     private var level: CEFRLevel { profile?.level ?? .a1 }
-    private var scenario: ScenarioConfig? { LevelsConfig.default.defaultScenario(for: level) }
+    private var completed: Set<String> { AppModel.completedLessons(in: sessions) }
+    private var scenario: ScenarioConfig? { AppModel.nextScenario(level: level, completed: completed) }
+    private var upNext: String {
+        guard let scenario else { return "Ready when you are" }
+        guard let unit = Course.unit(containing: scenario.id), let index = unit.lessons.firstIndex(where: { $0.id == scenario.id }) else {
+            return "\(scenario.title) is up next"
+        }
+        return "Unit \(unit.number) · Lesson \(index + 1) is up next"
+    }
     private var reviewCount: Int { Set(corrections.compactMap { $0.correction?.right.lowercased() }).count }
     private var minutesToday: Double {
         sessions.filter { Calendar.current.isDateInToday($0.date) }.reduce(0) { $0 + $1.durationSeconds } / 60
@@ -26,7 +34,7 @@ struct HomeView: View {
             ZStack {
                 switch model.tab {
                 case .today: today
-                case .path: PathPlaceholderView()
+                case .path: PathView(completed: completed, level: level, onStart: beginSession)
                 case .phrases: ReviewTabView()
                 case .me: ProgressTabView()
                 }
@@ -81,7 +89,7 @@ struct HomeView: View {
                     .font(.display(30, relativeTo: .largeTitle))
                     .tracking(-0.5)
                     .accessibilityAddTraits(.isHeader)
-                Text(scenario.map { "\($0.title) is up next" } ?? "Ready when you are")
+                Text(upNext)
                     .font(.subheadline)
                     .foregroundStyle(Noche.textMuted)
             }
@@ -139,7 +147,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(scenario?.title ?? "Talk with Lucía")
                         .font(.display(22))
-                    Text(model.isWarmupDoneToday ? "Warm-up done. Now talk it through with Lucía." : "Warm up on the key words, then talk it through with Lucía.")
+                    Text(model.isWarmupDoneToday ? "Warm-up done. Now talk it through with Lucía." : scenario?.subtitle ?? "Warm up on the key words, then talk it through with Lucía.")
                         .font(.subheadline)
                         .foregroundStyle(Noche.textSoft)
                         .fixedSize(horizontal: false, vertical: true)
@@ -206,28 +214,6 @@ private struct GoalRing: View {
         .onAppear { withAnimation(.spring(response: 0.9, dampingFraction: 0.8).delay(0.2)) { shown = fraction } }
         .onChange(of: fraction) { withAnimation(.hablemos) { shown = fraction } }
         .accessibilityHidden(true)
-    }
-}
-
-private struct PathPlaceholderView: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            UpperLabel(text: "Coming soon", color: Noche.brandText).entrance(0)
-            Text("Your path")
-                .font(.display(30, relativeTo: .largeTitle))
-                .tracking(-0.5)
-                .accessibilityAddTraits(.isHeader)
-                .entrance(1)
-            Text("Units and lessons, what you're learning today and what's next, will live here.")
-                .font(.subheadline)
-                .foregroundStyle(Noche.textSoft)
-                .entrance(2)
-            Spacer()
-            Orb(size: 120).frame(maxWidth: .infinity).entrance(3)
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
     }
 }
 

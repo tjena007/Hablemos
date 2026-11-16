@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ConversationView: View {
     let onEnd: (SessionResult) -> Void
+    let onPause: () -> Void
     @State private var model: ConversationViewModel
     @State private var showShadow = false
     @State private var showHint = false
@@ -10,15 +11,16 @@ struct ConversationView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
 
-    init(style: FeedbackStyle = .explicit, setup: SessionSetup? = nil, onEnd: @escaping (SessionResult) -> Void) {
+    init(style: FeedbackStyle = .explicit, setup: SessionSetup? = nil, onEnd: @escaping (SessionResult) -> Void, onPause: @escaping () -> Void = {}) {
         self.onEnd = onEnd
+        self.onPause = onPause
         let setup = setup ?? SessionSetup(config: .demo, services: .mock)
         _model = State(initialValue: ConversationViewModel(style: style, config: setup.config, services: setup.services))
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            StepHeader(title: model.scenario.title, subtitle: "Conversation with Lucía · \(model.levelName)", onLeading: end) {
+            StepHeader(title: model.scenario.title, subtitle: "Conversation with Lucía · \(model.levelName)", leadingLabel: "Pause", onLeading: pause) {
                 Button(action: end) {
                     Text("Terminar")
                         .font(.subheadline.weight(.semibold))
@@ -167,10 +169,20 @@ struct ConversationView: View {
                 .foregroundStyle(mood == .listening ? Noche.mint : Noche.textMuted)
                 .contentTransition(.opacity)
                 .animation(.easeInOut(duration: 0.2), value: moodLabel)
+            if !model.scenario.missions.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(model.scenario.missions, id: \.self) { mission in
+                            Chip(text: mission, foreground: Noche.textSoft, background: Noche.surfaceHi)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+                .accessibilityLabel("Your missions: \(model.scenario.missions.joined(separator: ", "))")
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .accessibilityElement(children: .combine)
     }
 
     private var actionChips: some View {
@@ -198,6 +210,14 @@ struct ConversationView: View {
                 .overlay(Capsule().strokeBorder(tint ? Noche.micRing : Noche.border))
         }
         .buttonStyle(PressableStyle())
+    }
+
+    /// Back pauses without saving; Home then offers to resume the lesson. Only Terminar ends it.
+    private func pause() {
+        Task {
+            await model.pause()
+            onPause()
+        }
     }
 
     private func end() {

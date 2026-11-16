@@ -41,6 +41,8 @@ final class PracticeSession {
         set { levelRaw = newValue.rawValue }
     }
 
+    var learnerTurnCount: Int { (turns ?? []).filter { $0.roleRaw == ChatMessage.Role.user.rawValue }.count }
+
     var metrics: SessionMetrics {
         get throws { try JSONDecoder().decode(SessionMetrics.self, from: metricsData) }
     }

@@ -62,14 +62,29 @@ final class AppModel {
     func startWarmup(context: ModelContext) {
         do {
             let profile = try ProgressStore(context: context).profile()
-            guard let scenario = LevelsConfig.default.defaultScenario(for: profile.level) else { throw SetupError.noScenario(profile.level) }
-            warmupScenario = scenario
+            warmupScenario = try Self.nextScenario(level: profile.level, context: context)
             warmupReview = try Self.reviewItems(context: context)
             warmupLocale = Locale(identifier: profile.localeIdentifier)
             route = .warmup
         } catch {
             errorMessage = "Could not start the warm-up: \(error)"
         }
+    }
+
+    /// The course lesson up next, or the level's default scenario once its lessons are done.
+    static func nextScenario(level: CEFRLevel, completed: Set<String>) -> ScenarioConfig? {
+        Course.nextLesson(completed: completed, level: level)?.scenario ?? LevelsConfig.default.defaultScenario(for: level)
+    }
+
+    /// Lessons with a real conversation saved; a stray line before backing out doesn't count.
+    static func completedLessons(in sessions: [PracticeSession]) -> Set<String> {
+        Set(sessions.filter { $0.learnerTurnCount >= Course.turnsToComplete }.map(\.scenarioID))
+    }
+
+    private static func nextScenario(level: CEFRLevel, context: ModelContext) throws -> ScenarioConfig {
+        let completed = completedLessons(in: try context.fetch(FetchDescriptor<PracticeSession>()))
+        guard let scenario = nextScenario(level: level, completed: completed) else { throw SetupError.noScenario(level) }
+        return scenario
     }
 
     private static let maxReviewItems = 5
@@ -101,9 +116,10 @@ final class AppModel {
             let store = ProgressStore(context: context)
             let profile = try store.profile()
             let levels = LevelsConfig.default
-            guard let levelConfig = levels.config(for: profile.level),
-                  let scenario = levels.defaultScenario(for: profile.level)
-            else { throw SetupError.noScenario(profile.level) }
+            guard let levelConfig = levels.config(for: profile.level) else { throw SetupError.noScenario(profile.level) }
+            // Keep the warmed-up lesson, so "run it again" repeats it rather than jumping to the next one.
+            let scenario = try warmupScenario ?? Self.nextScenario(level: profile.level, context: context)
+            warmupScenario = scenario
             let stats = try context.fetch(FetchDescriptor<MistakeStat>(sortBy: [SortDescriptor(\.count, order: .reverse)]))
             let config = SessionConfig(
                 scenario: scenario,
@@ -140,7 +156,8 @@ final class AppModel {
     }
 
     private static func opening(for scenario: ScenarioConfig) -> String {
-        scenario.id == "cafe" ? "¡Hola! Bienvenido al café. ¿Qué te pongo?" : "¡Hola! Soy Lucía. ¿Empezamos?"
+        if let lesson = Course.lesson(scenario.id) { return lesson.opening }
+        return scenario.id == "cafe" ? "¡Hola! Bienvenido al café. ¿Qué te pongo?" : "¡Hola! Soy Lucía. ¿Empezamos?"
     }
 
     enum SetupError: Error {

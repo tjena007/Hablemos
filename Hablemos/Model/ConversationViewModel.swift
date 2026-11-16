@@ -137,6 +137,14 @@ final class ConversationViewModel {
         await replyTask?.value
     }
 
+    func pause() async {
+        cancelGeneration()
+        errorTask?.cancel()
+        guard isListening else { return }
+        isListening = false
+        await services.stt.stopListening()
+    }
+
     func cancelGeneration() {
         replyTask?.cancel()
         speech?.stop()

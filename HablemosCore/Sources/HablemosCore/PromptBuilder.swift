@@ -5,7 +5,7 @@ public enum PromptBuilder {
 
     public static func systemPrompt(level: LevelConfig, scenario: ScenarioConfig, weakSpots: [String] = [], focusWords: [String] = []) -> String {
         var lines = [
-            "You are Lucía, a friendly barista in Madrid having a spoken conversation with a Spanish learner.",
+            "You are Lucía, \(scenario.role), having a spoken conversation with a Spanish learner.",
             "Learner level: \(level.level.rawValue). Scenario: \(scenario.description).",
             "Rules:",
             "- Reply ONLY in Spanish, \(level.maxSentences) short sentences max, using \(level.grammarScope).",
@@ -15,6 +15,9 @@ public enum PromptBuilder {
             "- Correct at most one mistake per turn; skip trivial ones.",
             "- If the learner writes in English, answer in simple Spanish and gently encourage Spanish.",
         ]
+        if !scenario.missions.isEmpty {
+            lines.append("- The learner's missions: \(scenario.missions.joined(separator: "; ")). Give them natural chances to do each one.")
+        }
         let spots = weakSpots.prefix(maxWeakSpots)
         if !spots.isEmpty {
             lines.append("- Naturally create chances to practice: \(spots.joined(separator: ", ")).")

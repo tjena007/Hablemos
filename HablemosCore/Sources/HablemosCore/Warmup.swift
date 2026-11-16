@@ -19,7 +19,7 @@ public struct Warmup: Equatable, Sendable {
     public var spokenTargets: [String] { (words + sentences).map(\.spanish) }
 
     public static func forScenario(_ id: String) -> Warmup {
-        table[id] ?? table["open"]!
+        Course.lesson(id)?.warmup ?? table[id] ?? table["open"]!
     }
 
     private static let table: [String: Warmup] = [

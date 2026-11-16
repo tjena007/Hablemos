@@ -139,6 +139,12 @@ struct PhraseMatcherTests {
         #expect(progress.isComplete)
     }
 
+    @Test func digitsMatchSpelledOutNumbers() {
+        #expect(PhraseMatcher.matches(heard: "son 10 pesos", target: "Son diez pesos."))
+        #expect(PhraseMatcher.matches(heard: "2 cafés por favor", target: "Dos cafés, por favor."))
+        #expect(!PhraseMatcher.matches(heard: "son 5 pesos", target: "Son diez pesos."))
+    }
+
     @Test func emptyTranscriptRecognizesNothing() {
         #expect(PhraseMatcher.progress(heard: [""], target: "Vi una película.").fraction == 0)
     }

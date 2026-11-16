@@ -26,13 +26,38 @@ public struct ScenarioConfig: Codable, Equatable, Sendable {
     public let subtitle: String
     public let level: CEFRLevel
     public let description: String
+    /// Who Lucía plays, e.g. "a friendly barista in Madrid".
+    public let role: String
+    /// What the learner should manage to say; Lucía steers toward them.
+    public let missions: [String]
 
-    public init(id: String, title: String, subtitle: String, level: CEFRLevel, description: String) {
+    public init(id: String, title: String, subtitle: String, level: CEFRLevel, description: String,
+                role: String = ScenarioConfig.defaultRole, missions: [String] = []) {
         self.id = id
         self.title = title
         self.subtitle = subtitle
         self.level = level
         self.description = description
+        self.role = role
+        self.missions = missions
+    }
+
+    public static let defaultRole = "a friendly conversation partner"
+
+    private enum CodingKeys: String, CodingKey { case id, title, subtitle, level, description, role, missions }
+
+    // Hand-written scenario files may leave out role and missions.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try container.decode(String.self, forKey: .id),
+            title: try container.decode(String.self, forKey: .title),
+            subtitle: try container.decode(String.self, forKey: .subtitle),
+            level: try container.decode(CEFRLevel.self, forKey: .level),
+            description: try container.decode(String.self, forKey: .description),
+            role: try container.decodeIfPresent(String.self, forKey: .role) ?? Self.defaultRole,
+            missions: try container.decodeIfPresent([String].self, forKey: .missions) ?? []
+        )
     }
 }
 
@@ -74,7 +99,7 @@ public struct LevelsConfig: Codable, Equatable, Sendable {
         ],
         scenarios: [
             ScenarioConfig(id: "cafe", title: "En el café", subtitle: "Order a coffee and a snack", level: .a1,
-                           description: "the learner is ordering food and drinks at your café"),
+                           description: "the learner is ordering food and drinks at your café", role: "a friendly barista in Madrid"),
             ScenarioConfig(id: "introductions", title: "Preséntate", subtitle: "Introduce yourself", level: .a1,
                            description: "the learner is introducing themselves to you"),
             ScenarioConfig(id: "directions", title: "Direcciones", subtitle: "Ask how to get somewhere", level: .a2,
